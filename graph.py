@@ -63,13 +63,13 @@ def makeLine(m, b):
         diff = int(y - (-m*(x+1)+b)) #gets the difference of f(x) and f(x+1)
         for d in range(0, abs(diff) - 1):
             if diff < 0:
-                print("hi")
                 if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
                     turnOn(x, y+d)
             elif diff > 0:
                 if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
                     turnOn(x, y-d)
 
+#of the form a * sin(b*x) + c
 def makeSin(a, b, c):
     for x in range(0, GWIDTH - 1):
         oldX = x
@@ -78,7 +78,7 @@ def makeSin(a, b, c):
         if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
             turnOn(x, y)
 
-#of the form a * sin(b*x)
+#of the form a * cos(b*x) + c
 def makeCos(a, b, c):
     for x in range(0, GWIDTH - 1):
         oldX = x
@@ -88,6 +88,16 @@ def makeCos(a, b, c):
             turnOn(x, y)
 
 def parse(inp):
+    if inp == "exit":
+        exit()
+
+    #recursively parse multiple equations with // delim
+    if inp.split("//")[0] != inp:
+        inp = inp.split("//")
+        parse(inp[0])
+        parse(inp[1])
+        return
+    
     #only works for linear parsing
     inp = inp.replace(" ", "") #remove spaces
     if inp.split("sin")[0] == inp:
@@ -106,16 +116,60 @@ def parse(inp):
                 b = 0
             makeLine(m, b)
         else: #cos
-            inp = inp.replace(")", "").replace("(", "").split("cos", "x")
-            a = float(inp[0])
-            b = float(inp[1])
-            c = float(inp[2])
+            # acos(bx)+c
+            inp = inp.split("cos")
+            if inp[0] == '':
+                a = 1.0
+            else:
+                a = float(inp[0])
+            try: #this is really bad try-catch abuse. need to find a way to check if 'c' is plus or minus
+                inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("+")
+                if inp2[0] == '':
+                    b = 1.0
+                else:
+                    b = float(inp2[0])
+                try:
+                    c = float(inp2[1])
+                except:
+                    c = 0.0
+            except:
+                inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("-")
+                if inp2[0] == '':
+                    b = 1.0
+                else:
+                    b = float(inp2[0])
+                try:
+                    c = -float(inp2[1])
+                except:
+                    c = 0.0
             makeCos(a, b, c)
-    else: #sin
-        inp = inp.replace(")", "").replace("(", "").split("sin", "x")
-        a = float(inp[0])
-        b = float(inp[1])
-        c = float(inp[2])
+    else: #sin --obvious code repetition can be cleaned up
+        # asin(bx)+c
+        inp = inp.split("sin")
+        if inp[0] == '':
+            a = 1.0
+        else:
+            a = float(inp[0])
+        try: #this is really bad try-catch abuse. need to find a way to check if 'c' is plus or minus
+            inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("+")
+            if inp2[0] == '':
+                b = 1.0
+            else:
+                b = float(inp2[0])
+            try:
+                c = float(inp2[1])
+            except:
+                c = 0.0
+        except:
+            inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("-")
+            if inp2[0] == '':
+                b = 1.0
+            else:
+                b = float(inp2[0])
+            try:
+                c = -float(inp2[1])
+            except:
+                c = 0.0
         makeSin(a, b, c)
         
 
