@@ -77,6 +77,14 @@ def makeSin(a, b, c):
         y = int(a * math.sin(b*x) + c)
         if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
             turnOn(x, y)
+        diff = int(y - (a * math.sin(b * (x + 1)) + c)) #gets the difference of f(x) and f(x+1)
+        for d in range(0, abs(diff)):
+            if diff < 0:
+                if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
+                    turnOn(x, y+d)
+            elif diff > 0:
+                if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
+                    turnOn(x, y-d)
 
 #of the form a * cos(b*x) + c
 def makeCos(a, b, c):
@@ -86,6 +94,14 @@ def makeCos(a, b, c):
         y = int(a * math.cos(b*x) + c)
         if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
             turnOn(x, y)
+        diff = int(y - (a * math.cos(b * (x + 1)) + c)) #gets the difference of f(x) and f(x+1)
+        for d in range(0, abs(diff)):
+            if diff < 0:
+                if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
+                    turnOn(x, y+d)
+            elif diff > 0:
+                if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
+                    turnOn(x, y-d)
 
 def animateGraph(type):
     for b in range(-50, 50):
@@ -99,6 +115,7 @@ def animateGraph(type):
             makeLine(b/10, 0)
         printGraph()
         sleep(0.1)
+        clearScreen()
 
 
 def parse(inp):
