@@ -87,9 +87,27 @@ def makeCos(a, b, c):
         if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
             turnOn(x, y)
 
+def animateGraph(type):
+    for b in range(-50, 50):
+        resetGraph()
+        clearScreen()
+        if type == "sin":
+            makeSin(10, b/100, 0)
+        if type == "cos":
+            makeCos(10, b/100, 0)
+        if type == "linear":
+            makeLine(b/10, 0)
+        printGraph()
+        sleep(0.1)
+
+
 def parse(inp):
     if inp == "exit":
         exit()
+    
+    if inp[0] == 'g' and inp[1] == 'o':
+        animateGraph(inp.replace(" ", "").replace("go", ""))
+        return
 
     #recursively parse multiple equations with // delim
     if inp.split("//")[0] != inp:
