@@ -1,6 +1,7 @@
 import math
 import os
 from time import sleep
+import numpy as np
 
 GWIDTH = 100
 GHEIGHT = 30
@@ -9,24 +10,33 @@ yInterval = 1
 
 
 #the graph is initialized as a GWIDTH by GHEIGHT matrix of False
-graph = [[False for i in range(GWIDTH)] for j in range(GHEIGHT)]
+# graph = [[False for i in range(GWIDTH)] for j in range(GHEIGHT)]
+graph = np.zeros((GHEIGHT,GWIDTH))
 
 #prints the graph
 def printGraph():
-    for h in range(0, GHEIGHT - 1):
-        line = ""
-        for w in range(0, GWIDTH - 1):
-            newChar = " "
-            if h == (GHEIGHT / 2) - 1:
-                newChar = "-"
-            if w == (GWIDTH / 2) - 1:
-                newChar = "|"
-            if w == (GWIDTH / 2) - 1 and h == (GHEIGHT / 2) - 1:
-                newChar = "+"
-            if (graph[h])[w]:
-                newChar = "*"
-            line += newChar
-        print(line)
+    g = np.full((GHEIGHT, GWIDTH), " ")
+    g[GHEIGHT // 2] = np.full(graph.shape[1], "-")
+    g[:,GWIDTH // 2] = np.full(graph.shape[0], "|")
+    g[GHEIGHT // 2, GWIDTH // 2] = "+"
+    g[graph == 1] = "*"
+    g = np.hstack((g, np.full((GHEIGHT, 1), "\n")))
+    print(g.tobytes().decode("utf-8"))
+
+    # for h in range(0, GHEIGHT - 1):
+    #     line = ""
+    #     for w in range(0, GWIDTH - 1):
+    #         newChar = " "
+    #         if h == (GHEIGHT / 2) - 1:
+    #             newChar = "-"
+    #         if w == (GWIDTH / 2) - 1:
+    #             newChar = "|"
+    #         if w == (GWIDTH / 2) - 1 and h == (GHEIGHT / 2) - 1:
+    #             newChar = "+"
+    #         if (graph[h])[w]:
+    #             newChar = "*"
+    #         line += newChar
+    #     print(line)
     
 #turns a coordinate from the array index into an axies-centered index
 #i.e. array coordinates to cartesian coordinates, where axies are centered
@@ -52,56 +62,88 @@ def makeHorzLine(y):
 
 #make a line via slope-intercept form: y = mx + b
 def makeLine(m, b):
-    for x in range(0, GWIDTH - 0):
-        (x, _dummy) = getAxiedNumber(x, 0)
-        y = int(-m*x+b) #i'm not sure why i have to negate this here but it works; i think some indexing is backwards
-        diff = y - (-m*(x+1)+b) #gets the difference of f(x) and f(x+1) so that it can filler
-        if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
-            turnOn(x, y)
+    # for x in range(0, GWIDTH - 0):
+    #     (x, _dummy) = getAxiedNumber(x, 0)
+    #     y = int(-m*x+b) #i'm not sure why i have to negate this here but it works; i think some indexing is backwards
+    #     diff = y - (-m*(x+1)+b) #gets the difference of f(x) and f(x+1) so that it can filler
+    #     if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
+    #         turnOn(x, y)
 
-        #### filler (for lines with large slopes) ####
-        diff = int(y - (-m*(x+1)+b)) #gets the difference of f(x) and f(x+1)
-        for d in range(0, abs(diff) - 1):
-            if diff < 0:
-                if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
-                    turnOn(x, y+d)
-            elif diff > 0:
-                if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
-                    turnOn(x, y-d)
+    #     #### filler (for lines with large slopes) ####
+    #     diff = int(y - (-m*(x+1)+b)) #gets the difference of f(x) and f(x+1)
+    #     for d in range(0, abs(diff) - 1):
+    #         if diff < 0:
+    #             if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
+    #                 turnOn(x, y+d)
+    #         elif diff > 0:
+    #             if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
+    #                 turnOn(x, y-d)
+    x_vals = (np.arange(GWIDTH) - GWIDTH // 2) * xInterval
+    y_vals = (m * x_vals + b)
+
+    x_plot = np.arange(GWIDTH, dtype='int32')
+    y_plot = (y_vals // yInterval) * -1
+
+    ind = np.argwhere(np.abs(y_plot) < GHEIGHT // 2)
+    
+    graph[y_plot[ind].astype('int32') + GHEIGHT // 2, x_plot[ind]] = 1
 
 #of the form a * sin(b*x) + c
 def makeSin(a, b, c):
-    for x in range(0, GWIDTH - 1):
-        oldX = x
-        (x, _dummy) = getAxiedNumber(x, 0)
-        y = int(a * math.sin(b*x) + c)
-        if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
-            turnOn(x, y)
-        diff = int(y - (a * math.sin(b * (x + 1)) + c)) #gets the difference of f(x) and f(x+1)
-        for d in range(0, abs(diff)):
-            if diff < 0:
-                if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
-                    turnOn(x, y+d)
-            elif diff > 0:
-                if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
-                    turnOn(x, y-d)
+    # for x in range(0, GWIDTH - 1):
+    #     oldX = x
+    #     (x, _dummy) = getAxiedNumber(x, 0)
+    #     y = int(a * math.sin(b*x) + c)
+    #     if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
+    #         turnOn(x, y)
+    #     diff = int(y - (a * math.sin(b * (x + 1)) + c)) #gets the difference of f(x) and f(x+1)
+    #     for d in range(0, abs(diff)):
+    #         if diff < 0:
+    #             if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
+    #                 turnOn(x, y+d)
+    #         elif diff > 0:
+    #             if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
+    #                 turnOn(x, y-d)
+    x_vals = (np.arange(GWIDTH) - GWIDTH // 2) * xInterval
+    y_vals = (a * np.sin(b * x_vals) + c)
+
+    x_plot = np.arange(GWIDTH, dtype='int32')
+    y_plot = (y_vals // yInterval) * -1
+
+    ind = np.argwhere(np.abs(y_plot) < GHEIGHT // 2)
+    
+    graph[y_plot[ind].astype('int32') + GHEIGHT // 2, x_plot[ind]] = 1
 
 #of the form a * cos(b*x) + c
 def makeCos(a, b, c):
-    for x in range(0, GWIDTH - 1):
-        oldX = x
-        (x, _dummy) = getAxiedNumber(x, 0)
-        y = int(a * math.cos(b*x) + c)
-        if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
-            turnOn(x, y)
-        diff = int(y - (a * math.cos(b * (x + 1)) + c)) #gets the difference of f(x) and f(x+1)
-        for d in range(0, abs(diff)):
-            if diff < 0:
-                if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
-                    turnOn(x, y+d)
-            elif diff > 0:
-                if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
-                    turnOn(x, y-d)
+    # for x in range(0, GWIDTH - 1):
+    #     oldX = x
+    #     (x, _dummy) = getAxiedNumber(x, 0)
+    #     y = int(a * math.cos(b*x) + c)
+    #     if y < GHEIGHT / 2 and y > - GHEIGHT / 2:
+    #         turnOn(x, y)
+    #     diff = int(y - (a * math.cos(b * (x + 1)) + c)) #gets the difference of f(x) and f(x+1)
+    #     for d in range(0, abs(diff)):
+    #         if diff < 0:
+    #             if y+d < GHEIGHT / 2 and y+d > - GHEIGHT / 2:
+    #                 turnOn(x, y+d)
+    #         elif diff > 0:
+    #             if y-d < GHEIGHT / 2 and y-d > - GHEIGHT / 2:
+    #                 turnOn(x, y-d)
+
+    # Want point for each x in range(GWIDTH)
+    # -50, -49, ..., -1, 0, 1, ..., 48, 49 (x-int 1)
+    # -100, -98, ..., -2, 0, 2, ..., 96, 98 (x-int 2)
+
+    x_vals = (np.arange(GWIDTH) - GWIDTH // 2) * xInterval
+    y_vals = (a * np.cos(b * x_vals) + c)
+
+    x_plot = np.arange(GWIDTH, dtype='int32')
+    y_plot = (y_vals // yInterval) * -1
+
+    ind = np.argwhere(np.abs(y_plot) < GHEIGHT // 2)
+    
+    graph[y_plot[ind].astype('int32') + GHEIGHT // 2, x_plot[ind]] = 1
 
 def animateGraph(type):
     for b in range(-50, 50):
