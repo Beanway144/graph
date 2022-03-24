@@ -15,6 +15,15 @@ graph = np.zeros((GHEIGHT,GWIDTH))
 
 #prints the graph
 def printGraph():
+    for i in range(GWIDTH):
+        if (i == GWIDTH - 1): break
+        c1 = graph[:,i]; c2 = graph[:,i+1]
+        i1 = np.argwhere(c1 == 1); i2 = np.argwhere(c2 == 1)
+        if (len(i1) != 0 and len(i2) != 0):
+            i1 = i1[0,0]; i2 = i2[0,0]
+            if (abs(i1-i2) > 1):
+                graph[min(i1,i2):max(i1,i2),i] = np.ones(abs(i1-i2))
+
     g = np.full((GHEIGHT, GWIDTH), " ")
     g[GHEIGHT // 2] = np.full(graph.shape[1], "-")
     g[:,GWIDTH // 2] = np.full(graph.shape[0], "|")
@@ -22,9 +31,7 @@ def printGraph():
     g[graph == 1] = "*"
     g = np.hstack((g, np.full((GHEIGHT, 1), "\n")))
 
-    
-
-    print(g.tobytes().decode("utf-8"))
+    print(str.replace(g.tobytes().decode("utf-8"), "*", "⠁"))
     
 #turns a coordinate from the array index into an axies-centered index
 #i.e. array coordinates to cartesian coordinates, where axies are centered
@@ -87,16 +94,17 @@ def makeCos(a, b, c):
 def animateGraph(type):
     for b in range(-50, 50):
         resetGraph()
-        clearScreen()
         if type == "sin":
             makeSin(10, b/100, 0)
         if type == "cos":
             makeCos(10, b/100, 0)
         if type == "linear":
             makeLine(b/10, 0)
-        printGraph()
-        sleep(0.1)
         clearScreen()
+        printGraph()
+        sleep(0.10)
+    clearScreen()
+
 
 
 def parse(inp):
