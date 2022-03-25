@@ -102,6 +102,8 @@ def animateGraph(type):
         resetGraph()
         if type == "sin":
             makeSin(10, b/100, 0)
+        if type == "sinf":
+            makeSin(10, (b + 51)/30, 0)
         if type == "cos":
             makeCos(10, b/100, 0)
         if type == "linear":
