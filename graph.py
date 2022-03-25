@@ -140,7 +140,7 @@ def clearScreen():
       _ = os.system('cls')
 
 def runREPL():
-    print("Please enter a function to graph of the form mx + b or a sin(b x) + c.\n")
+    print("Please enter a function in the form y = f(x) and use explicit multiplication:")
     while 1:
         inp = input("[-]")
         clearScreen()
