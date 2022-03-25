@@ -1,16 +1,19 @@
 import math
 import os
 from time import sleep
+from tkinter import XView
 import numpy as np
+import operator as op
 
 GWIDTH = 100
 GHEIGHT = 30
 xInterval = 1
 yInterval = 1
 
+ops = {'+': op.add, '-': op.sub, '*': op.mul, '/': op.truediv}
+
 
 #the graph is initialized as a GWIDTH by GHEIGHT matrix of False
-# graph = [[False for i in range(GWIDTH)] for j in range(GHEIGHT)]
 graph = np.zeros((GHEIGHT,GWIDTH))
 
 #prints the graph
@@ -22,16 +25,19 @@ def printGraph():
         if (len(i1) != 0 and len(i2) != 0):
             i1 = i1[0,0]; i2 = i2[0,0]
             if (abs(i1-i2) > 1):
-                graph[min(i1,i2):max(i1,i2),i] = np.ones(abs(i1-i2))
+                if i1 < i2:
+                    graph[i1:i2,i] = 1
+                else:
+                    graph[i2:i1,i+1] = 1
 
     g = np.full((GHEIGHT, GWIDTH), " ")
-    g[GHEIGHT // 2] = np.full(graph.shape[1], "-")
+    g[GHEIGHT // 2] = np.full(graph.shape[1], "―")
     g[:,GWIDTH // 2] = np.full(graph.shape[0], "|")
     g[GHEIGHT // 2, GWIDTH // 2] = "+"
-    g[graph == 1] = "*"
-    g = np.hstack((g, np.full((GHEIGHT, 1), "\n")))
+    g[graph == 1] = "⋅"
 
-    print(str.replace(g.tobytes().decode("utf-8"), "*", "⠁"))
+    for j in range(GHEIGHT):
+        print(''.join(g[j]))
     
 #turns a coordinate from the array index into an axies-centered index
 #i.e. array coordinates to cartesian coordinates, where axies are centered
@@ -105,96 +111,24 @@ def animateGraph(type):
         sleep(0.10)
     clearScreen()
 
-
-
 def parse(inp):
-    if inp == "exit":
-        exit()
-    
-    if inp[0] == 'g' and inp[1] == 'o':
-        animateGraph(inp.replace(" ", "").replace("go", ""))
-        return
+    if inp == "exit": exit()
 
-    #recursively parse multiple equations with // delim
-    if inp.split("//")[0] != inp:
-        inp = inp.split("//")
-        parse(inp[0])
-        parse(inp[1])
-        return
-    
-    #only works for linear parsing
-    inp = inp.replace(" ", "") #remove spaces
-    if inp.split("sin")[0] == inp:
-        if inp.split("cos")[0] == inp: #linear
-            inp = inp.split("x")
-            try:
-                if inp[0] == "-":
-                    m = -1.0
-                else:
-                    m = float(inp[0]) #if slope not specified, it's 1
-            except:
-                m = 1
-            try:
-                b = float(inp[1])
-            except:
-                b = 0
-            makeLine(m, b)
-        else: #cos
-            # acos(bx)+c
-            inp = inp.split("cos")
-            if inp[0] == '':
-                a = 1.0
-            else:
-                a = float(inp[0])
-            try: #this is really bad try-catch abuse. need to find a way to check if 'c' is plus or minus
-                inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("+")
-                if inp2[0] == '':
-                    b = 1.0
-                else:
-                    b = float(inp2[0])
-                try:
-                    c = float(inp2[1])
-                except:
-                    c = 0.0
-            except:
-                inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("-")
-                if inp2[0] == '':
-                    b = 1.0
-                else:
-                    b = float(inp2[0])
-                try:
-                    c = -float(inp2[1])
-                except:
-                    c = 0.0
-            makeCos(a, b, c)
-    else: #sin --obvious code repetition can be cleaned up
-        # asin(bx)+c
-        inp = inp.split("sin")
-        if inp[0] == '':
-            a = 1.0
+    inp = ''.join(inp.split())
+
+    if inp.count('=') == 1:
+        left,right = inp.split('=')
+        left = left.strip(); right = right.strip()
+        if (left != 'y'): print('Please use y = f(x) format')
         else:
-            a = float(inp[0])
-        try: #this is really bad try-catch abuse. need to find a way to check if 'c' is plus or minus
-            inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("+")
-            if inp2[0] == '':
-                b = 1.0
-            else:
-                b = float(inp2[0])
-            try:
-                c = float(inp2[1])
-            except:
-                c = 0.0
-        except:
-            inp2 = inp[1].replace("x","").replace("(","").replace(")","").split("-")
-            if inp2[0] == '':
-                b = 1.0
-            else:
-                b = float(inp2[0])
-            try:
-                c = -float(inp2[1])
-            except:
-                c = 0.0
-        makeSin(a, b, c)
+            x = (np.arange(GWIDTH) - GWIDTH // 2) * xInterval
+            y_vals = eval(right)
+            x_plot = np.arange(GWIDTH, dtype='int32')
+            y_plot = (y_vals // yInterval) * -1
+
+            ind = np.argwhere(np.abs(y_plot) < GHEIGHT // 2)
+            
+            graph[y_plot[ind].astype('int32') + GHEIGHT // 2, x_plot[ind]] = 1
         
 
 def clearScreen():
