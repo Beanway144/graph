@@ -105,6 +105,7 @@ def animateGraph(type):
         clearScreen()
         printGraph()
         sleep(0.10)
+    clearScreen()
 
 
 
